@@ -75,9 +75,9 @@ run_foreground() {
   echo "Starting task (foreground): $task"
   if [ -n "$gpu" ]; then
     echo "  GPU: $gpu"
-    env CUDA_VISIBLE_DEVICES="$gpu" DATASET_NAME="$task" DEBUG=true ./train_tcwm.sh
+    CUDA_VISIBLE_DEVICES="$gpu" WANDB_MODE=offline python train.py --config-name=train_tcwm env="$task" training.epochs="${EPOCHS:-100}" debug=true
   else
-    env DATASET_NAME="$task" DEBUG=true ./train_tcwm.sh
+    WANDB_MODE=offline python train.py --config-name=train_tcwm env="$task" training.epochs="${EPOCHS:-100}" debug=true
   fi
 }
 
@@ -88,9 +88,9 @@ run_background() {
   echo "Starting task (background): $task"
   if [ -n "$gpu" ]; then
     echo "  GPU: $gpu"
-    nohup env CUDA_VISIBLE_DEVICES="$gpu" DATASET_NAME="$task" DEBUG=false ./train_tcwm.sh > "$log_file" 2>&1 &
+    CUDA_VISIBLE_DEVICES="$gpu" WANDB_MODE=offline nohup python train.py --config-name=train_tcwm env="$task" training.epochs="${EPOCHS:-100}" > "$log_file" 2>&1 &
   else
-    nohup env DATASET_NAME="$task" DEBUG=false ./train_tcwm.sh > "$log_file" 2>&1 &
+    WANDB_MODE=offline nohup python train.py --config-name=train_tcwm env="$task" training.epochs="${EPOCHS:-100}" > "$log_file" 2>&1 &
   fi
   local pid=$!
   echo "$pid" >> "$PID_FILE"

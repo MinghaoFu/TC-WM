@@ -5,22 +5,19 @@
 
 set -e  # Exit on any error
 
-# Environment setup
-echo "🔧 Setting up environment..."
-cd /data2/minghao/wm_align/wm
+cd "$(dirname "$0")"
 
 # Verify environment
 echo "🔍 Verifying environment..."
 python -c "import torch; print(f'CUDA available: {torch.cuda.is_available()}, GPUs: {torch.cuda.device_count()}')"
 
-# Set environment variables
-export WANDB_BASE_URL=https://api.bandw.top
-export HF_ENDPOINT=https://hf-mirror.com
-export HUGGINGFACE_HUB_CACHE=$HOME/.cache/huggingface
-export HF_HUB_ENABLE_HF_TRANSFER=1
+export WANDB_MODE=${WANDB_MODE:-offline}
+export HF_ENDPOINT=${HF_ENDPOINT:-https://huggingface.co}
+export HUGGINGFACE_HUB_CACHE=${HUGGINGFACE_HUB_CACHE:-$HOME/.cache/huggingface}
+export HF_HUB_ENABLE_HF_TRANSFER=${HF_HUB_ENABLE_HF_TRANSFER:-1}
 
 # Training configuration
-CONFIG_NAME="train"
+CONFIG_NAME="${CONFIG_NAME:-train_tcwm}"
 DEBUG_MODE=${DEBUG:-false}
 EPOCHS=${EPOCHS:-100}  
 NUM_GPUS=${NUM_GPUS:-1}  

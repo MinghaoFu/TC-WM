@@ -89,13 +89,16 @@ Saves three GIFs per trajectory: `{env}_orig.gif`, `{env}_recon.gif`, `{env}_pre
 
 ```
 TC-WM/
-├── train.py · plan.py · rollout.py · utils.py · preprocessor.py · custom_resolvers.py
-├── models/         # VWorldModel + encoder · projector · predictor · decoder
+├── train.py · plan.py · rollout.py · rollout_videos.py    # entry points
+├── utils.py · preprocessor.py · custom_resolvers.py       # shared helpers + Hydra resolvers
+├── train.sh · run_tcwm.sh · install_mujoco.sh             # convenience launchers / MuJoCo setup
+├── conf/           # Hydra configs (env / encoder / method / planner / decoder / ...)
+├── models/         # VWorldModel: encoder · projector · predictor · decoder
 ├── env/            # Gym wrappers for Maze, Wall, Push-T, Robomimic, DMC
 ├── datasets/       # Trajectory loaders
 ├── planning/       # CEM, LDP, MPC, evaluator
-├── conf/           # Hydra configs (env / encoder / method / planner / ...)
-├── metrics/  distributed_fn/  gpu_utils/
+├── metrics/  ·  distributed_fn/  ·  gpu_utils/
+├── environment.yml · requirements.txt · default_config.yaml · hydra.yaml
 └── assets/
 ```
 
