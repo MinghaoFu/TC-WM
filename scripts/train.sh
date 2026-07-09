@@ -5,7 +5,7 @@
 
 set -e  # Exit on any error
 
-cd "$(dirname "$0")"
+cd "$(dirname "$0")/.."
 
 # Verify environment
 echo "🔍 Verifying environment..."

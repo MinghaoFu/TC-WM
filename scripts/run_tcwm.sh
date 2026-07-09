@@ -6,12 +6,14 @@
 # - DEBUG=true forces foreground; DEBUG=false forces background
 #
 # Usage:
-#   TASKS=lift ./run_tcwm.sh
-#   TASKS=lift,pusht ./run_tcwm.sh
-#   DEBUG=false TASKS=lift ./run_tcwm.sh
-#   DEBUG=true TASKS=lift,pusht ./run_tcwm.sh
+#   TASKS=lift scripts/run_tcwm.sh
+#   TASKS=lift,pusht scripts/run_tcwm.sh
+#   DEBUG=false TASKS=lift scripts/run_tcwm.sh
+#   DEBUG=true TASKS=lift,pusht scripts/run_tcwm.sh
 
 set -euo pipefail
+
+cd "$(dirname "$0")/.."
 
 PID_FILE="logs/run_tcwm.pids"
 JOB_FILE="logs/run_tcwm.jobs"

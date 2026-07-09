@@ -43,7 +43,7 @@ Empirically, TC-WM enables zero-shot **test-time planning** across nine offline 
 ```bash
 conda env create -f environment.yml
 conda activate tcwm
-bash install_mujoco.sh             # MuJoCo 210 + LD_LIBRARY_PATH setup
+bash scripts/install_mujoco.sh     # MuJoCo 210 + LD_LIBRARY_PATH setup
 pip install d4rl pymunk==6.* shapely scikit-image pygame   # env extras
 ```
 
@@ -60,7 +60,7 @@ export TCWM_DATA_ROOT=/path/to/data       # configs read this via ${oc.env:TCWM_
 python train.py --config-name=train_tcwm env=wall
 
 # All TC-WM tasks (one GPU each, picks free GPUs automatically)
-bash run_tcwm.sh
+bash scripts/run_tcwm.sh
 ```
 
 Configs live in `conf/` (Hydra). Key knobs: `env=`, `encoder=` (dino / vjepa / dinov3), `projected_dim`, `alignment_dim`, `training.epochs`. Offline run by default (`WANDB_MODE=offline`).
@@ -91,7 +91,7 @@ Saves three GIFs per trajectory: `{env}_orig.gif`, `{env}_recon.gif`, `{env}_pre
 TC-WM/
 ├── train.py · plan.py · rollout.py · rollout_videos.py    # entry points
 ├── utils.py · preprocessor.py · custom_resolvers.py       # shared helpers + Hydra resolvers
-├── train.sh · run_tcwm.sh · install_mujoco.sh             # convenience launchers / MuJoCo setup
+├── scripts/         # train.sh, run_tcwm.sh, install_mujoco.sh
 ├── conf/           # Hydra configs (env / encoder / method / planner / decoder / ...)
 ├── models/         # VWorldModel: encoder · projector · predictor · decoder
 ├── env/            # Gym wrappers for Maze, Wall, Push-T, Robomimic, DMC
