@@ -6,15 +6,23 @@ __pycache__/
 .venv/
 .env
 
-# Runtime artifacts
+# Runtime artifacts (per-run / per-machine)
 wandb/
 logs/
 plan_outputs/
 rollout_outputs/
 outputs/
+multirun/
+.hydra/
+rollouts/
 checkpoints/
 *.pth
+*.pt
 *.ckpt
+nohup.out
+*.log
+slurm-*.out
+.ipynb_checkpoints/
 
 # Data
 data/
