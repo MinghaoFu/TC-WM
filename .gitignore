@@ -28,3 +28,13 @@ data/
 # OS
 .DS_Store
 Thumbs.db
+
+# Per-run / per-machine artifacts
+multirun/
+.hydra/
+rollouts/
+*.pt
+nohup.out
+*.log
+slurm-*.out
+.ipynb_checkpoints/
