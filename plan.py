@@ -17,7 +17,7 @@ from einops import rearrange
 from omegaconf import OmegaConf, open_dict
 
 from env.venv import SubprocVectorEnv
-from preprocessor import Preprocessor
+from datasets.preprocessor import Preprocessor
 from planning.evaluator import PlanEvaluator
 from utils import cfg_to_dict, seed
 import matplotlib.pyplot as plt
