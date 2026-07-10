@@ -30,7 +30,7 @@ from datetime import timedelta
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
 from metrics.image_metrics import eval_images
 from utils import slice_trajdict_with_t, cfg_to_dict, seed, sample_tensors
-from gpu_utils.gpu_utils import auto_select_gpus
+from utils.gpu import auto_select_gpus
 import functools
 
 warnings.filterwarnings("ignore")
