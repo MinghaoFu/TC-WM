@@ -30,7 +30,6 @@ from datetime import timedelta
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
 from metrics.image_metrics import eval_images
 from utils import slice_trajdict_with_t, cfg_to_dict, seed, sample_tensors
-from utils.gpu import auto_select_gpus
 import functools
 
 warnings.filterwarnings("ignore")
@@ -52,10 +51,10 @@ class _Tee:
 
 # Hydra resolver to add a dash only when a description is provided.
 OmegaConf.register_new_resolver("maybe_suffix", lambda s: f"-{s}" if s else "")
-# Resolve output name for ckpt paths: use dataset_name for mmbench, else env name.
+# Resolve the output-name segment of ckpt paths from the env name.
 OmegaConf.register_new_resolver(
     "env_output_name",
-    lambda env_name, dataset_name: dataset_name if env_name == "mmbench" and dataset_name else env_name,
+    lambda env_name, dataset_name=None: env_name,
 )
 
 # Rollout helpers for multiprocessing sampling.
@@ -279,7 +278,7 @@ class Trainer:
                 log.info("WARNING: Running in debug mode...")
                 self.wandb_run = wandb.init(
                     project="minimal_wm",
-                    entity="minghao_workaholic",
+                    entity=None,
                     config=wandb_dict,
                     id=wandb_run_id,
                     resume="allow",
@@ -287,7 +286,7 @@ class Trainer:
             else:
                 self.wandb_run = wandb.init(
                     project="minimal_wm",
-                    entity="minghao_workaholic", # TODO: add entitiy to all the wandb init in the code
+                    entity=None,
                     config=wandb_dict,
                     id=wandb_run_id,
                     resume="allow",
@@ -1919,14 +1918,11 @@ class Trainer:
         )
 
 
-@hydra.main(config_path="conf", config_name="train_robomimic_align_recon")
+@hydra.main(config_path="conf", config_name="train_tcwm")
 def main(cfg: OmegaConf):
-    # Only auto-select GPUs if CUDA_VISIBLE_DEVICES is not already set
-    if 'CUDA_VISIBLE_DEVICES' not in os.environ:
-        # Auto-select GPUs with lowest memory usage
-        selected_gpus = auto_select_gpus(getattr(cfg, 'num_gpus', 1), getattr(cfg, 'min_free_memory_gb', 2.0))
-    else:
-        log.info(f"Using pre-configured CUDA_VISIBLE_DEVICES: {os.environ['CUDA_VISIBLE_DEVICES']}")
+    # GPUs are selected via CUDA_VISIBLE_DEVICES (set it before launching).
+    if 'CUDA_VISIBLE_DEVICES' in os.environ:
+        log.info(f"Using CUDA_VISIBLE_DEVICES: {os.environ['CUDA_VISIBLE_DEVICES']}")
     
     trainer = Trainer(cfg)
     trainer.run()

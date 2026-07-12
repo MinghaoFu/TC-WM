@@ -19,7 +19,7 @@ def get_dataset_path(prefix, env_name):
 
 
 class RobomimicEnv(gym.Env):
-    def __init__(self, env_name, data_prefix="/home/ubuntu/minghao/data/robomimic",
+    def __init__(self, env_name, data_prefix="./data/robomimic",
                  img_size=224, camera_name="agentview"):
         super().__init__()
         self.env_name = env_name

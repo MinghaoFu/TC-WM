@@ -7,7 +7,7 @@ hydra:
     dir: plan_outputs/${now:%Y%m%d%H%M%S}_${replace_slash:${model_name}}_gH${goal_H}
 
 # model to load for planning  
-ckpt_base_path: /mnt/data1/minghao/robomimic/checkpoints/outputs/robomimic_can/outputs/2025-08-07/14-52-03
+ckpt_base_path: ${oc.env:TCWM_DATA_ROOT,./data}/checkpoints  # set to your trained run dir
 model_name: robomimic_align_trained
 model_epoch: latest
 
@@ -17,7 +17,7 @@ goal_source: 'dset'
 goal_H: 15
 n_plot_samples: 0
 env_name: can-ph
-data_prefix: /data2/minghao/data/robomimic
+data_prefix: ${oc.env:TCWM_DATA_ROOT,./data}/robomimic
 
 debug_dset_init: False
 

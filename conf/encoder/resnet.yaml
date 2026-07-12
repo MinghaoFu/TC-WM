@@ -1,3 +1,0 @@
-_target_: models.visual_encoder.resnet.resnet18
-pretrained: True
-unit_norm: False

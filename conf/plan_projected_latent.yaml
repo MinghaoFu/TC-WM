@@ -5,7 +5,7 @@ hydra:
   run:
     dir: plan_outputs/${now:%Y%m%d%H%M%S}_projected_latent_${projected_dim}d_gH${goal_H}
 
-ckpt_base_path: /data2/minghao/wm/outputs/2025-09-13/03-37-25
+ckpt_base_path: ${oc.env:TCWM_DATA_ROOT,./data}/checkpoints  # set to your trained run dir
 model_name: projected_latent_mixed
 model_epoch: latest
 projected_dim: 64

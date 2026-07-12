@@ -92,4 +92,4 @@ proprio_pred:
 wandb:
   project: tasuw
   name: "dreamerv3_rssm"
-  entity: minghao_workaholic
+  entity: null

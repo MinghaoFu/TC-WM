@@ -1,8 +1,0 @@
-_target_: models.visual_encoder.wan_vae.WanVAEEncoder
-model_id: "Wan-AI/Wan2.1-T2V-1.3B-Diffusers"
-subfolder: "vae"
-torch_dtype: "float16"
-sample_mode: "mean"
-normalize: "minus_one_to_one"
-output_dtype: "float32"
-patch_size: null

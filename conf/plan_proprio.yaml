@@ -7,7 +7,7 @@ hydra:
     dir: plan_outputs/${now:%Y%m%d%H%M%S}_proprio_planning_gH${goal_H}
 
 # No model checkpoint needed for proprio-only planning
-ckpt_base_path: /home/minghao/workspace/dino_wm
+ckpt_base_path: ${oc.env:TCWM_DATA_ROOT,./data}/checkpoints  # set to your trained run dir
 model_name: "proprio_only_dummy"
 model_epoch: latest
 
