@@ -1,6 +1,6 @@
 defaults:
   - _self_
-  - env: robomimic_can
+  - env: can
   - encoder: dino 
   - action_encoder: proprio
   - proprio_encoder: proprio
@@ -8,8 +8,8 @@ defaults:
   - predictor: vit
 
 # Model checkpoint path for alignment model (using existing alignment checkpoint for now)
-ckpt_path: /mnt/data1/minghao/robomimic/checkpoints/outputs/robomimic_can/outputs/2025-07-24/10-28-51/checkpoint_best.pt
-ckpt_base_path: /mnt/data1/minghao/robomimic/checkpoints/outputs/robomimic_can/outputs/2025-07-24/10-28-51
+ckpt_path: ${oc.env:TCWM_DATA_ROOT,./data}/checkpoints  # set to your trained run dir
+ckpt_base_path: ${oc.env:TCWM_DATA_ROOT,./data}/checkpoints  # set to your trained run dir
 
 # Dataset
 dset_name: "robomimic_can"

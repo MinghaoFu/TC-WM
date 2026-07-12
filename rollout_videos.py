@@ -49,7 +49,7 @@ log = logging.getLogger(__name__)
 OmegaConf.register_new_resolver("maybe_suffix", lambda s: f"-{s}" if s else "")
 OmegaConf.register_new_resolver(
     "env_output_name",
-    lambda env_name, dataset_name: dataset_name if env_name == "mmbench" and dataset_name else env_name,
+    lambda env_name, dataset_name=None: env_name,
 )
 # Patch to tolerate duplicate registration from train_uwm.py import
 _orig_register = OmegaConf.register_new_resolver

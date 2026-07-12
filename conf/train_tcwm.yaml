@@ -14,7 +14,7 @@ defaults:
   - _self_
 
 ckpt_base_path: ${paths.data_root}/logs/experiments/tcwm/${env_output_name:${env.name},${env.dataset_name}}
-resume_folder: none #/data2/minghao/wm/outputs_wall/2025-10-03/04-35-04
+resume_folder: none
 val_only: false
 description: ""
 
@@ -107,4 +107,4 @@ proprio_pred:
 wandb:
   project: tasuw
   name: "linear_projector_history_196_64"
-  entity: minghao_workaholic
+  entity: null

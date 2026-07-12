@@ -1,5 +1,0 @@
-_target_: models.visual_encoder.vjepa.VJEPAEncoder
-name: "vjepa_vitl16"
-img_size: 224
-checkpoint_path: null
-encoder_key: "target_encoder"

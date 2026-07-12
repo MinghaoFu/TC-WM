@@ -90,4 +90,4 @@ proprio_pred:
 wandb:
   project: tasuw
   name: "tdmpc2_lift"
-  entity: minghao_workaholic
+  entity: null

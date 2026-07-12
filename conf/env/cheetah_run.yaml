@@ -3,10 +3,10 @@ args: []
 kwargs: {}
 
 dataset:
-  _target_: "datasets.mmbench_dset.load_mmbench_slice_train_val"
+  _target_: "datasets.dmc_dset.load_dmc_slice_train_val"
   n_rollout: null
   normalize_action: ${normalize_action}
-  data_path: /mnt/data_7tb/minghao.fu/newt_rollouts/cheetah-run
+  data_path: ${oc.env:TCWM_DATA_ROOT,./data}/newt_rollouts/cheetah-run
   split_ratio: 0.8
   image_size: ${img_size}
   transform:

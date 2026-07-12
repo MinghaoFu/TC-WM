@@ -1,4 +1,5 @@
 import os
+import json
 import pickle
 from pathlib import Path
 from typing import Callable, Optional
@@ -9,12 +10,12 @@ import torch
 from decord import VideoReader
 from einops import rearrange
 
-from .traj_dset import TrajDataset, TrajSlicerDataset
+from .traj_dset import TrajDataset, TrajSlicerDataset, TrajSubset
 
 decord.bridge.set_bridge("torch")
 
 
-class OGBenchDataset(TrajDataset):
+class DMCDataset(TrajDataset):
     def __init__(
         self,
         data_path: str,
@@ -31,6 +32,7 @@ class OGBenchDataset(TrajDataset):
         self.relative = relative
         self.normalize_action = normalize_action
         self.image_size = image_size
+        self.task_name = self.data_path.name
 
         self.states = torch.load(self.data_path / "states.pth").float()
         if relative:
@@ -62,6 +64,7 @@ class OGBenchDataset(TrajDataset):
         else:
             self.velocities = None
 
+        self._maybe_trim_padded_dims()
         self.action_dim = self.actions.shape[-1]
         self.state_dim = self.states.shape[-1]
         self.proprio_dim = self.proprios.shape[-1]
@@ -73,6 +76,15 @@ class OGBenchDataset(TrajDataset):
             self.state_std = torch.load(self.data_path / "state_std.pth")
             self.proprio_mean = torch.load(self.data_path / "proprio_mean.pth")
             self.proprio_std = torch.load(self.data_path / "proprio_std.pth")
+            if self.action_mean.shape[-1] != self.action_dim:
+                self.action_mean = self.action_mean[: self.action_dim]
+                self.action_std = self.action_std[: self.action_dim]
+            if self.state_mean.shape[-1] != self.state_dim:
+                self.state_mean = self.state_mean[: self.state_dim]
+                self.state_std = self.state_std[: self.state_dim]
+            if self.proprio_mean.shape[-1] != self.proprio_dim:
+                self.proprio_mean = self.proprio_mean[: self.proprio_dim]
+                self.proprio_std = self.proprio_std[: self.proprio_dim]
         else:
             self.action_mean = torch.zeros(self.action_dim)
             self.action_std = torch.ones(self.action_dim)
@@ -84,12 +96,50 @@ class OGBenchDataset(TrajDataset):
         self.actions = (self.actions - self.action_mean) / self.action_std
         self.proprios = (self.proprios - self.proprio_mean) / self.proprio_std
 
-        self.has_video = False
         obs_dir = self.data_path / "obses"
-        if obs_dir.exists():
-            for p in obs_dir.glob("episode_*.mp4"):
-                self.has_video = True
-                break
+        if not obs_dir.exists():
+            raise FileNotFoundError(f"Missing obs directory: {obs_dir}")
+        if not any(obs_dir.glob("episode_*.mp4")):
+            raise FileNotFoundError(f"No episode_*.mp4 found in {obs_dir}")
+
+    def _maybe_trim_padded_dims(self):
+        # Trim padded trailing dims for actions/states/proprios, if present.
+        action_dim = self._get_task_action_dim()
+        if action_dim is not None and self.actions.shape[-1] > action_dim:
+            self.actions = self.actions[..., :action_dim]
+        else:
+            self.actions = self._trim_trailing_zeros(self.actions)
+
+        self.states = self._trim_trailing_zeros(self.states)
+        self.proprios = self._trim_trailing_zeros(self.proprios)
+
+    def _get_task_action_dim(self):
+        tasks_fp = Path("tasks.json")  # override with your task-embedding file if using multitask
+        if not tasks_fp.exists():
+            return None
+        try:
+            with open(tasks_fp, "r") as f:
+                tasks = json.load(f)
+            info = tasks.get(self.task_name)
+            if info is None:
+                return None
+            return int(info.get("action_dim"))
+        except Exception:
+            return None
+
+    @staticmethod
+    def _trim_trailing_zeros(tensor):
+        # Only trim if trailing dims are exactly zero across all samples/timesteps.
+        if tensor.numel() == 0:
+            return tensor
+        flat = tensor.reshape(-1, tensor.shape[-1])
+        nonzero = (flat.abs().max(dim=0).values > 0)
+        if not nonzero.any():
+            return tensor[..., :1]
+        last_idx = int(nonzero.nonzero()[-1]) + 1
+        if last_idx == tensor.shape[-1]:
+            return tensor
+        return tensor[..., :last_idx]
 
     def get_seq_length(self, idx):
         return self.seq_lengths[idx]
@@ -106,17 +156,13 @@ class OGBenchDataset(TrajDataset):
         state = self.states[idx, frames]
         proprio = self.proprios[idx, frames]
 
-        if self.has_video:
-            vid_dir = self.data_path / "obses"
-            reader = VideoReader(str(vid_dir / f"episode_{idx:05d}.mp4"), num_threads=1)
-            image = reader.get_batch(frames)
-            image = image / 255.0
-            image = rearrange(image, "T H W C -> T C H W")
-        else:
-            image = torch.zeros(
-                (len(frames), 3, self.image_size, self.image_size),
-                dtype=torch.float32,
-            )
+        vid_dir = self.data_path / "obses"
+        reader = VideoReader(
+            str(vid_dir / f"episode_{idx:05d}.mp4"), num_threads=1
+        )
+        image = reader.get_batch(frames)
+        image = image / 255.0
+        image = rearrange(image, "T H W C -> T C H W")
 
         if self.transform:
             image = self.transform(image)
@@ -133,16 +179,15 @@ class OGBenchDataset(TrajDataset):
         if isinstance(imgs, np.ndarray):
             raise NotImplementedError
         if isinstance(imgs, torch.Tensor):
-            if self.has_video:
-                return rearrange(imgs, "b h w c -> b c h w") / 255.0
-            return imgs
+            return rearrange(imgs, "b h w c -> b c h w") / 255.0
 
 
-def load_ogbench_slice_train_val(
+def load_dmc_slice_train_val(
     transform,
     data_path,
     n_rollout=50,
     normalize_action=True,
+    split_ratio=0.8,
     num_hist=0,
     num_pred=0,
     frameskip=0,
@@ -151,27 +196,41 @@ def load_ogbench_slice_train_val(
 ):
     train_path = os.path.join(data_path, "train")
     val_path = os.path.join(data_path, "val")
-    if not (os.path.exists(train_path) and os.path.exists(val_path)):
-        raise FileNotFoundError(
-            f"Expected pre-split train/val at {train_path} and {val_path}"
+    if os.path.exists(train_path) and os.path.exists(val_path):
+        train_dset = DMCDataset(
+            data_path=train_path,
+            n_rollout=n_rollout,
+            transform=transform,
+            normalize_action=normalize_action,
+            with_velocity=with_velocity,
+            image_size=image_size,
+        )
+        val_dset = DMCDataset(
+            data_path=val_path,
+            n_rollout=n_rollout,
+            transform=transform,
+            normalize_action=normalize_action,
+            with_velocity=with_velocity,
+            image_size=image_size,
+        )
+    else:
+        print(f"No train/val split found, using single dataset at {data_path}")
+        full_dset = DMCDataset(
+            data_path=data_path,
+            n_rollout=n_rollout,
+            transform=transform,
+            normalize_action=normalize_action,
+            with_velocity=with_velocity,
+            image_size=image_size,
         )
 
-    train_dset = OGBenchDataset(
-        data_path=train_path,
-        n_rollout=n_rollout,
-        transform=transform,
-        normalize_action=normalize_action,
-        with_velocity=with_velocity,
-        image_size=image_size,
-    )
-    val_dset = OGBenchDataset(
-        data_path=val_path,
-        n_rollout=n_rollout,
-        transform=transform,
-        normalize_action=normalize_action,
-        with_velocity=with_velocity,
-        image_size=image_size,
-    )
+        total_samples = len(full_dset)
+        train_size = int(total_samples * split_ratio)
+        val_size = total_samples - train_size
+        print(f"Total samples: {total_samples}, Train: {train_size}, Val: {val_size}")
+
+        train_dset = TrajSubset(full_dset, list(range(train_size)))
+        val_dset = TrajSubset(full_dset, list(range(train_size, total_samples)))
 
     num_frames = num_hist + num_pred
     train_slices = TrajSlicerDataset(train_dset, num_frames, frameskip)

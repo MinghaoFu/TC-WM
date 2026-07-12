@@ -10,8 +10,8 @@ defaults:
   - override hydra/launcher: basic
 
 # base path to save model outputs. Checkpoints will be saved to ${ckpt_base_path}/outputs.
-ckpt_base_path: /data2/minghao/wm_align/wm/outputs_pusht
-resume_folder: none #/data2/minghao/wm_align/wm/outputs_pusht/2025-09-18/04-59-43
+ckpt_base_path: ${oc.env:TCWM_DATA_ROOT,./data}/checkpoints  # set to your trained run dir
+resume_folder: none
 val_only: false
 
 hydra:

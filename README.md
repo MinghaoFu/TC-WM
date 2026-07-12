@@ -59,11 +59,11 @@ export TCWM_DATA_ROOT=/path/to/data       # configs read this via ${oc.env:TCWM_
 # Single task
 python train.py --config-name=train_tcwm env=wall
 
-# All TC-WM tasks (one GPU each, picks free GPUs automatically)
-bash scripts/run_tcwm.sh
+# Several tasks (set CUDA_VISIBLE_DEVICES to choose GPUs)
+TASKS=lift,can,square bash scripts/run_tcwm.sh
 ```
 
-Configs live in `conf/` (Hydra). Key knobs: `env=`, `encoder=` (dino / vjepa / dinov3), `projected_dim`, `alignment_dim`, `training.epochs`. Offline run by default (`WANDB_MODE=offline`).
+Configs live in `conf/` (Hydra). Key knobs: `env=`, `encoder=` (dino / dinov3 / cosmos_ci), `projected_dim`, `alignment_dim`, `training.epochs`. Offline run by default (`WANDB_MODE=offline`).
 
 ## Plan
 
@@ -90,7 +90,7 @@ Saves three GIFs per trajectory: `{env}_orig.gif`, `{env}_recon.gif`, `{env}_pre
 ```
 TC-WM/
 ├── train.py · plan.py · rollout.py · rollout_videos.py    # entry points
-├── utils/          # helpers, GPU selection, Hydra resolvers
+├── utils/          # helpers, Hydra resolvers
 ├── scripts/         # train.sh, run_tcwm.sh, install_mujoco.sh
 ├── conf/           # Hydra configs (env / encoder / method / planner / decoder / ...)
 ├── models/         # VWorldModel: encoder · projector · predictor · decoder
@@ -98,8 +98,7 @@ TC-WM/
 ├── datasets/       # Trajectory loaders + preprocessor
 ├── planning/       # CEM, LDP, MPC, evaluator
 ├── metrics/  ·  distributed_fn/
-├── environment.yml · requirements.txt · default_config.yaml
-└── assets/
+└── environment.yml · requirements.txt · default_config.yaml
 ```
 
 ## Checkpoints

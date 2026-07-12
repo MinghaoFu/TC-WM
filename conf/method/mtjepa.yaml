@@ -1,7 +1,0 @@
-# Multi-Task JEPA objectives
-# Same as DINO-WM: pure consistency loss, no task-specific supervision.
-# Task conditioning is handled by the task token in the predictor.
-objectives:
-  - _target_: models.objective.objectives.ConsistencyLossObjective
-    projected_dim: null   # _post_bundle slices to visual+proprio; use all dims
-    loss_weight: 1.0
